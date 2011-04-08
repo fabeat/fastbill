@@ -1,0 +1,3 @@
+[submodule "lib/vendor/curl"]
+	path = lib/vendor/curl
+	url = git@github.com:fabeat/curl.git
