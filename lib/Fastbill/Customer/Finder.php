@@ -8,9 +8,9 @@ class Finder extends \Fastbill\Base\Finder
   {
     $con = \Fastbill\Connection\Wrapper::getInstance()->chooseConnection($con);
     $req = array(
-      'SERVICE' => 'customer.delete',
+      'SERVICE' => 'customer.get',
       'DATA'    => array(
-        'CUSTOMER_ID' => $this['CUSTOMER_ID']
+        'CUSTOMER_ID' => $id
       ),
     );
     $json = \Fastbill\Base\Helper::jsonDecodedRequest($req, $con);
@@ -18,6 +18,6 @@ class Finder extends \Fastbill\Base\Finder
     {
       \Fastbill\Base\Helper::checkNotParsableResponse($json);
     }
-    return \Fastbill\Customer\Customer($json['RESPONSE']['CUSTOMERS'][0]);
+    return new \Fastbill\Customer\Customer($json['RESPONSE']['CUSTOMERS'][0]);
   }
 }

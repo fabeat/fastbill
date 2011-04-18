@@ -4,40 +4,6 @@ namespace Fastbill\Customer;
 
 class Customer extends \Fastbill\Base\Model
 {
-
-  protected $data = array(
-    'CUSTOMER_ID'         => null,
-    'CUSTOMER_NUMBER'     => null,
-    'CUSTOMER_TYPE'       => null,
-    'CUSTOMER_TOP'        => null,
-    'ORGANIZATION'        => null,
-    'POSITION'            => null,
-    'SALUATION'           => null,
-    'FIRST_NAME'          => null,
-    'LAST_NAME'           => null,
-    'ADDRESS'             => null,
-    'ADDRESS_2'           => null,
-    'ZIPCODE'             => null,
-    'CITY'                => null,
-    'COUNTRY_CODE'        => null,
-    'PHONE'               => null,
-    'PHONE_2'             => null,
-    'FAX'                 => null,
-    'MOBILE'              => null,
-    'EMAIL'               => null,
-    'ACCOUNT_RECEIVABLE'  => null,
-    'CURRENCY_CODE'       => null,
-    'VAT_ID'              => null,
-    'DAYS_FOR_PAYMENT'    => null,
-    'PAYMENT_TYPE'        => null,
-    'SHOW_PAYMENT_NOTICE' => null,
-    'BANK_NAME'           => null,
-    'BANK_CODE'           => null,
-    'BANK_ACCOUNT_NUMBER' => null,
-    'BANK_ACCOUNT_OWNER'  => null,
-    'COMMENT'             => null,
-  );
-
   protected $readonly_data = array(
     'CUSTOMER_ID'
   );

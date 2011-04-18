@@ -12,7 +12,7 @@ class Helper
     }
     else
     {
-      throw new \Fastbill\Exception\ResponseParseErrorException('Error parsing the response.');
+      throw new \Fastbill\Exception\ResponseParseErrorException('Error parsing the response: '. json_encode($json));
     }
   }
 
