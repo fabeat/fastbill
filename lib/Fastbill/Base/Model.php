@@ -67,6 +67,15 @@ abstract class Model implements \ArrayAccess, \Countable, \Iterator
     return $result;
   }
 
+  public function fillFromArray($arr)
+  {
+    foreach ($arr as $key => $val)
+    {
+      $this[$key] = $val;
+    }
+  }
+
+
   protected function checkReadonly($offset)
   {
     if (in_array($offset, $this->readonlyData))

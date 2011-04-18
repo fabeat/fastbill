@@ -98,4 +98,39 @@ class CustomerTest extends PHPUnit_Framework_TestCase
 
     $customer2->delete();
   }
+
+  public function testDuplicate()
+  {
+    $data = array(
+      'CUSTOMER_NUMBER'  => 1,
+      'CUSTOMER_TYPE'    => 'business',
+      'ORGANIZATION'     => 'Test Gbr',
+      'SALUATION'        => 'mr',
+      'FIRST_NAME'       => 'Max',
+      'LAST_NAME'        => 'Mustemann',
+      'ADDRESS'          => 'Musterstraße 1',
+      'ZIPCODE'          => '80808',
+      'CITY'             => 'München',
+      'PAYMENT_TYPE'     => 1,
+      'COUNTRY_CODE'     => 'DE',
+    );
+    $customer1 = new \Fastbill\Customer\Customer();
+    $customer2 = new \Fastbill\Customer\Customer();
+
+    $customer1->fillFromArray($data);
+    $customer2->fillFromArray($data);
+
+    $customer1->save();
+    $customer2->save();
+
+    $customer1_neu = \Fastbill\Customer\Finder::findOneById($customer1['CUSTOMER_ID']);
+    $customer2_neu = \Fastbill\Customer\Finder::findOneById($customer2['CUSTOMER_ID']);
+
+    $this->assertEquals($customer1['CUSTOMER_ID'], $customer1_neu['CUSTOMER_ID'], 'Verifying data from Fastbill');
+    $this->assertEquals($customer2['COUNTRY_CODE'], $customer2_neu['COUNTRY_CODE'], 'Verifying data from Fastbill');
+
+    $customer1->delete();
+    $customer2->delete();
+  }
+
 }
