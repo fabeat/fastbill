@@ -31,16 +31,20 @@ class Customer extends \Fastbill\Base\Model
   protected function doSave($con)
   {
     $con = \Fastbill\Connection\Wrapper::getInstance()->chooseConnection($con);
+    $create = $this->isNew();
     $req = array(
-      'SERVICE' => $this->isNew()?'customer.create':'customer.update',
+      'SERVICE' => $create?'customer.create':'customer.update',
       'DATA'    => $this->getDataForRequest(),
     );
     $json = \Fastbill\Base\Helper::jsonDecodedRequest($req, $con);
-    if (!('success' == $json['RESPONSE']['STATUS'] && isset($json['RESPONSE']['CUSTOMER_ID'])))
+    if (!('success' == $json['RESPONSE']['STATUS']) OR ($create AND !isset($json['RESPONSE']['CUSTOMER_ID'])))
     {
       \Fastbill\Base\Helper::checkNotParsableResponse($json);
     }
-    $this->data['CUSTOMER_ID'] = $json['RESPONSE']['CUSTOMER_ID'];
+    if ($create)
+    {
+      $this->data['CUSTOMER_ID'] = $json['RESPONSE']['CUSTOMER_ID'];
+    }
     return true;
   }
 

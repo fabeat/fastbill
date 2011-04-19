@@ -10,6 +10,26 @@ class CustomerTest extends PHPUnit_Framework_TestCase
     \Fastbill\Connection\Wrapper::init(\FASTBILL_EMAIL, \FASTBILL_KEY);
   }
 
+  protected function getFixture()
+  {
+    $data = array(
+      'CUSTOMER_NUMBER'  => 1,
+      'CUSTOMER_TYPE'    => 'business',
+      'ORGANIZATION'     => 'Test Gbr',
+      'SALUATION'        => 'mr',
+      'FIRST_NAME'       => 'Max',
+      'LAST_NAME'        => 'Mustemann',
+      'ADDRESS'          => 'Musterstraße 1',
+      'ZIPCODE'          => '80808',
+      'CITY'             => 'München',
+      'PAYMENT_TYPE'     => 1,
+      'COUNTRY_CODE'     => 'DE',
+    );
+    $customer = new \Fastbill\Customer\Customer();
+    $customer->fillFromArray($data);
+    return $customer;
+  }
+
   public function testCreate()
   {
     $customer = new \Fastbill\Customer\Customer();
@@ -56,26 +76,15 @@ class CustomerTest extends PHPUnit_Framework_TestCase
     $this->assertTrue($customer->isChanged(), 'isChanged() returns true.');
   }
 
-  public function testUpdate()
+  public function testGet()
   {
-    # set up fixture
-    $customer = new \Fastbill\Customer\Customer();
-    $customer['CUSTOMER_NUMBER']  = 1;
-    $customer['CUSTOMER_TYPE']    = 'business';
-    $customer['ORGANIZATION']     = 'Test Gbr';
-    $customer['SALUATION']        = 'mr';
-    $customer['FIRST_NAME']       = 'Max';
-    $customer['LAST_NAME']        = 'Mustemann';
-    $customer['ADDRESS']          = 'Musterstraße 1';
-    $customer['ZIPCODE']          = '80808';
-    $customer['CITY']             = 'München';
-    $customer['PAYMENT_TYPE']     = 1;
-    $customer['COUNTRY_CODE']     = 'DE';
+    $customer = $this->getFixture();
     $customer->save();
 
     $this->assertNotNull($customer['CUSTOMER_ID'], 'CUSTOMER_ID set.');
 
     $customer2 = \Fastbill\Customer\Finder::findOneById($customer['CUSTOMER_ID']);
+    $this->assertInstanceOf('\Fastbill\Customer\Customer', $customer2, 'Testing response instance');
 
     # check status
     $this->assertFalse($customer2->isNew(), 'isNew() returns false.');
@@ -99,26 +108,24 @@ class CustomerTest extends PHPUnit_Framework_TestCase
     $customer2->delete();
   }
 
+  public function testUpdate()
+  {
+    $customer = $this->getFixture();
+    $customer->save();
+    $customer['CUSTOMER_NUMBER'] = 2;
+    $this->assertEquals($customer['CUSTOMER_NUMBER'], 2);
+    $this->assertTrue($customer->save());
+    $customer2 = \Fastbill\Customer\Finder::findOneById($customer['CUSTOMER_ID']);
+    $this->assertEquals($customer2['CUSTOMER_NUMBER'], $customer['CUSTOMER_NUMBER']);
+    $customer2->delete();
+
+  }
+
+
   public function testDuplicate()
   {
-    $data = array(
-      'CUSTOMER_NUMBER'  => 1,
-      'CUSTOMER_TYPE'    => 'business',
-      'ORGANIZATION'     => 'Test Gbr',
-      'SALUATION'        => 'mr',
-      'FIRST_NAME'       => 'Max',
-      'LAST_NAME'        => 'Mustemann',
-      'ADDRESS'          => 'Musterstraße 1',
-      'ZIPCODE'          => '80808',
-      'CITY'             => 'München',
-      'PAYMENT_TYPE'     => 1,
-      'COUNTRY_CODE'     => 'DE',
-    );
-    $customer1 = new \Fastbill\Customer\Customer();
-    $customer2 = new \Fastbill\Customer\Customer();
-
-    $customer1->fillFromArray($data);
-    $customer2->fillFromArray($data);
+    $customer1 = $this->getFixture();
+    $customer2 = $this->getFixture();
 
     $customer1->save();
     $customer2->save();
@@ -133,4 +140,19 @@ class CustomerTest extends PHPUnit_Framework_TestCase
     $customer2->delete();
   }
 
+  public function testFindNull()
+  {
+    $not_found = \Fastbill\Customer\Finder::findOneById(1);
+    $this->assertNull($not_found, 'Search for invalid id returns null.');
+  }
+
+  public function testNonExistant()
+  {
+    $customer = $this->getFixture();
+    $customer->save();
+    $not_found = \Fastbill\Customer\Finder::findOneById(1);
+    $this->assertNull($not_found, 'Search for invalid id returns null.');
+    $customer->delete();
+    echo 'HALLO';
+  }
 }

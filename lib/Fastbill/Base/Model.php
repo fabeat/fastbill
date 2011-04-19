@@ -2,13 +2,11 @@
 
 namespace Fastbill\Base;
 
-abstract class Model implements \ArrayAccess, \Countable, \Iterator
+abstract class Model extends DataObject
 {
   protected $isNew        = true;
   protected $isDeleted    = false;
   protected $isChanged    = false;
-  protected $data         = array();
-  protected $readonlyData = array();
 
   abstract protected function doSave($con);
   abstract protected function doDelete($con);
@@ -75,15 +73,6 @@ abstract class Model implements \ArrayAccess, \Countable, \Iterator
     }
   }
 
-
-  protected function checkReadonly($offset)
-  {
-    if (in_array($offset, $this->readonlyData))
-    {
-      throw new \Fastbill\Exception\InvalidArgumentException('The field "'.$offset.'" is read-only.');
-    }
-  }
-
   protected function getDataForRequest()
   {
     $cb = function($var)
@@ -93,69 +82,22 @@ abstract class Model implements \ArrayAccess, \Countable, \Iterator
     return array_filter($this->data, $cb);
   }
 
-  // ArrayAccess methods
   public function offsetSet($offset, $value)
   {
-    $this->checkReadonly($offset);
-
     if ($this->offsetGet($offset) !== $value)
     {
       $this->isChanged = true;
     }
-
-    $this->data[$offset] = $value;
-  }
-
-  public function offsetExists($offset)
-  {
-    return isset($this->data[$offset]);
+    parent::offsetSet($offset, $value);
   }
 
   public function offsetUnset($offset)
   {
-    $this->checkReadonly($offset);
-    if (null !== $this->data[$offset])
+    if (isset($this->data[$offset]))
     {
+      parent::offsetUnset($offset);
       $this->isChanged = true;
-      $this->data[$offset] = null;
     }
-  }
-
-  public function offsetGet($offset)
-  {
-    return isset($this->data[$offset]) ? $this->data[$offset] : null;
-  }
-
-  // Countable methods
-  public function count()
-  {
-    return count($this->data);
-  }
-
-  // Iterator methods
-  public function rewind()
-  {
-    reset($this->data);
-  }
-
-  public function current()
-  {
-    return current($this->data);
-  }
-
-  public function key()
-  {
-    return key($this->data);
-  }
-
-  public function next()
-  {
-    return next($this->data);
-  }
-
-  public function valid()
-  {
-    return !is_null(key($this->data));
   }
 
 }

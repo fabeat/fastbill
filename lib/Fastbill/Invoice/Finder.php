@@ -1,6 +1,6 @@
 <?php
 
-namespace Fastbill\Customer;
+namespace Fastbill\Invoice;
 
 class Finder extends \Fastbill\Base\Finder
 {
@@ -8,11 +8,11 @@ class Finder extends \Fastbill\Base\Finder
   {
     return self::findOneHelper(
       array(
-        'SERVICE' => 'customer.get',
-        'DATA'    => array( 'CUSTOMER_ID' => $id )
+        'SERVICE' => 'invoice.get',
+        'DATA'    => array( 'INVOICE_ID' => $id )
       ),
-      'CUSTOMERS',
-      '\Fastbill\Customer\Customer',
+      'INVOICES',
+      '\Fastbill\Customer\Invoice',
       $con
     );
   }
