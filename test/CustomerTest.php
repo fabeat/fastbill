@@ -152,6 +152,5 @@ class CustomerTest extends PHPUnit_Framework_TestCase
     $not_found = \Fastbill\Customer\Finder::findOneById(1);
     $this->assertNull($not_found, 'Search for invalid id returns null.');
     $customer->delete();
-    echo 'HALLO';
   }
 }
