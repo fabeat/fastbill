@@ -50,6 +50,44 @@ abstract class Model extends DataObject
     return $result;
   }
 
+  protected function doSaveHelper($create_service, $update_service, $idName, $con)
+  {
+    $con = \Fastbill\Connection\Wrapper::getInstance()->chooseConnection($con);
+    $create = $this->isNew();
+    $req = array(
+      'SERVICE' => $create?$create_service:$update_service,
+      'DATA'    => $this->getDataForRequest(),
+    );
+    $json = \Fastbill\Base\Helper::jsonDecodedRequest($req, $con);
+    if (!('success' == $json['RESPONSE']['STATUS']) OR ($create AND !isset($json['RESPONSE'][$idName])))
+    {
+      \Fastbill\Base\Helper::checkNotParsableResponse($json);
+    }
+    if ($create)
+    {
+      $this->data[$idName] = $json['RESPONSE'][$idName];
+    }
+    return true;
+  }
+
+  protected function doDeleteHelper($delete_service, $idName, $con)
+  {
+    $con = \Fastbill\Connection\Wrapper::getInstance()->chooseConnection($con);
+    $req = array(
+      'SERVICE' => $delete_service,
+      'DATA'    => array(
+        $idName => $this[$idName]
+      ),
+    );
+    $json = \Fastbill\Base\Helper::jsonDecodedRequest($req, $con);
+    if ('success' != $json['RESPONSE']['STATUS'])
+    {
+      \Fastbill\Base\Helper::checkNotParsableResponse($json);
+    }
+    $this->data[$idName] = null;
+    return true;
+  }
+
   public function delete($con = null)
   {
     if ($this->isDeleted())
@@ -63,14 +101,6 @@ abstract class Model extends DataObject
     $this->isDeleted = $this->isNew = $this->isChanged = true;
 
     return $result;
-  }
-
-  public function fillFromArray($arr)
-  {
-    foreach ($arr as $key => $val)
-    {
-      $this[$key] = $val;
-    }
   }
 
   protected function getDataForRequest()

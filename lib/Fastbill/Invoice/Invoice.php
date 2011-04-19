@@ -7,15 +7,25 @@ class Invoice extends \Fastbill\Base\Model
 
   protected $customer = null;
 
+  protected $data = array(
+    'ITEMS' => array()
+  );
+
   protected $readonly_data = array(
     'INVOICE_ID'
   );
 
+  /**
+   * Set a customer for this invoice
+   */
   public function setCustomer(\Fastbill\Customer\Customer $customer)
   {
     $this->customer = $customer;
   }
 
+  /**
+   * Get the customer associated with this invoice
+   */
   public function getCustomer()
   {
     if (null === $customer && isset($this['CUSTOMER_ID']))
@@ -23,6 +33,71 @@ class Invoice extends \Fastbill\Base\Model
       $this->customer = \Fastbill\Customer\Finder::findOneById($this['CUSTOMER_ID']);
     }
     return $this->customer;
+  }
+
+  /**
+   * Get the items associated with this invoice
+   */
+  public function getItems()
+  {
+    return $this['ITEMS'];
+  }
+
+  /**
+   * Get the items associated with this invoice as an array
+   */
+  public function getItemsAsArray()
+  {
+    $map = function ($item) {
+      return $item->toArray();
+    };
+    return array_map($map, $this['ITEMS']);
+  }
+
+  /**
+   * Set the items associated with this invoice (overwrite the existing items)
+   *
+   * @param array An array of Items to add.
+   * @see Invoice::addItem
+   */
+  public function setItems($items)
+  {
+    $this['ITEMS'] = array();
+    $this->addItems($items);
+  }
+
+  /**
+   * Add a item to this invoice
+   *
+   * @param array|\Fastbill\Item\Item Item to add. Arrays will be automatically converted to Fastbill\Item\Item objects
+   */
+  public function addItem($item)
+  {
+    if ($item instanceof \Fastbill\Item\Item)
+    {
+      $this['ITEMS'][] = $item;
+    }
+    else
+    {
+      $itemObj = new \Fastbill\Item\Item();
+      $itemObj->fillFromArray($item);
+      $this['ITEMS'];
+    }
+
+  }
+
+  /**
+   * Add items to this invoice
+   *
+   * @param array An array of Items to add.
+   * @see Invoice::addItem
+   */
+  public function addItems($items)
+  {
+    foreach ($items as $item)
+    {
+      $this->addItem($item);
+    }
   }
 
   public function offsetSet($offset, $value)
@@ -45,45 +120,27 @@ class Invoice extends \Fastbill\Base\Model
 
   protected function doSave($con)
   {
-    $con = \Fastbill\Connection\Wrapper::getInstance()->chooseConnection($con);
     if (null !== $this->customer)
     {
       $this->customer->save($con);
       $this['CUSTOMER_ID'] = $this->customer['CUSTOMER_ID'];
     }
-    $create = $this->isNew();
-    $req = array(
-      'SERVICE' => $create?'invoice.create':'invoice.update',
-      'DATA'    => $this->getDataForRequest(),
-    );
-    $json = \Fastbill\Base\Helper::jsonDecodedRequest($req, $con);
-    if (!('success' == $json['RESPONSE']['STATUS']) OR ($create AND !isset($json['RESPONSE']['INVOICE_ID'])))
-    {
-      \Fastbill\Base\Helper::checkNotParsableResponse($json);
-    }
-    if ($create)
-    {
-      $this->data['INVOICE_ID'] = $json['RESPONSE']['INVOICE_ID'];
-    }
-    return true;
+    return $this->doSaveHelper('invoice.create', 'invoice.update', 'INVOICE_ID', $con);
   }
 
   protected function doDelete($con)
   {
-    $con = \Fastbill\Connection\Wrapper::getInstance()->chooseConnection($con);
-    $req = array(
-      'SERVICE' => 'invoice.delete',
-      'DATA'    => array(
-        'INVOICE_ID' => $this['INVOICE_ID']
-      ),
-    );
-    $json = \Fastbill\Base\Helper::jsonDecodedRequest($req, $con);
-    if ('success' != $json['RESPONSE']['STATUS'])
+    return $this->doDeleteHelper('invoice.delete', 'INVOICE_ID', $con);
+  }
+
+  protected function getDataForRequest()
+  {
+    $data = parent::getDataForRequest();
+    if (isset($data['ITEMS']))
     {
-      \Fastbill\Base\Helper::checkNotParsableResponse($json);
+      $data['ITEMS'] = $this->getItemsAsArray();
     }
-    $this->data['INVOICE_ID'] = null;
-    return true;
+    return $data;
   }
 
 }

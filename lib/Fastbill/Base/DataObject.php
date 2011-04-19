@@ -82,4 +82,16 @@ abstract class DataObject implements \ArrayAccess, \Countable, \Iterator
     }
   }
 
+  public function fillFromArray($arr)
+  {
+    foreach ($arr as $key => $val)
+    {
+      $this[$key] = $val;
+    }
+  }
+
+  public function toArray()
+  {
+    return $this->data;
+  }
 }

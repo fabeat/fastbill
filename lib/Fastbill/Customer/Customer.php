@@ -30,39 +30,11 @@ class Customer extends \Fastbill\Base\Model
 
   protected function doSave($con)
   {
-    $con = \Fastbill\Connection\Wrapper::getInstance()->chooseConnection($con);
-    $create = $this->isNew();
-    $req = array(
-      'SERVICE' => $create?'customer.create':'customer.update',
-      'DATA'    => $this->getDataForRequest(),
-    );
-    $json = \Fastbill\Base\Helper::jsonDecodedRequest($req, $con);
-    if (!('success' == $json['RESPONSE']['STATUS']) OR ($create AND !isset($json['RESPONSE']['CUSTOMER_ID'])))
-    {
-      \Fastbill\Base\Helper::checkNotParsableResponse($json);
-    }
-    if ($create)
-    {
-      $this->data['CUSTOMER_ID'] = $json['RESPONSE']['CUSTOMER_ID'];
-    }
-    return true;
+    return $this->doSaveHelper('customer.create', 'customer.update', 'CUSTOMER_ID', $con);
   }
 
   protected function doDelete($con)
   {
-    $con = \Fastbill\Connection\Wrapper::getInstance()->chooseConnection($con);
-    $req = array(
-      'SERVICE' => 'customer.delete',
-      'DATA'    => array(
-        'CUSTOMER_ID' => $this['CUSTOMER_ID']
-      ),
-    );
-    $json = \Fastbill\Base\Helper::jsonDecodedRequest($req, $con);
-    if ('success' != $json['RESPONSE']['STATUS'])
-    {
-      \Fastbill\Base\Helper::checkNotParsableResponse($json);
-    }
-    $this->data['CUSTOMER_ID'] = null;
-    return true;
+    return $this->doDeleteHelper('customer.delete', 'CUSTOMER_ID', $con);
   }
 }
