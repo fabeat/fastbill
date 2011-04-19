@@ -121,7 +121,6 @@ class CustomerTest extends PHPUnit_Framework_TestCase
 
   }
 
-
   public function testDuplicate()
   {
     $customer1 = $this->getFixture();
